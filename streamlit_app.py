@@ -359,7 +359,7 @@ def main():
             help="Add tags to categorize your documents"
         )
         
-        if st.button("Upload Files", type="primary"):
+        if st.button("Process Files", type="primary"):
             if uploaded_files:
                 tag_list = [tag.strip() for tag in tags_input.split(",")] if tags_input else []
                 
