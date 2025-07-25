@@ -59,13 +59,26 @@ def init_gemini():
 # Document processing functions
 def chunk_text(text: str, chunk_size: int, chunk_overlap: int) -> List[str]:
     """Split text into overlapping chunks"""
-    words = text.split()
-    chunks = []
+    if not text or not text.strip():
+        return []
     
-    for i in range(0, len(words), chunk_size - chunk_overlap):
+    words = text.split()
+    if not words:
+        return []
+    
+    # If text is very short, return as single chunk
+    if len(words) <= chunk_size:
+        return [text.strip()]
+    
+    chunks = []
+    overlap = max(0, min(chunk_overlap, chunk_size - 1))  # Ensure valid overlap
+    
+    for i in range(0, len(words), chunk_size - overlap):
         chunk_words = words[i:i + chunk_size]
-        chunk_text = ' '.join(chunk_words)
-        chunks.append(chunk_text)
+        if chunk_words:  # Only add non-empty chunks
+            chunk_text = ' '.join(chunk_words).strip()
+            if chunk_text:  # Only add chunks with actual content
+                chunks.append(chunk_text)
         
         if i + chunk_size >= len(words):
             break
@@ -79,14 +92,27 @@ def load_pdf(file, filename: str, tags: List[str] = None) -> List[DocumentChunk]
         reader = PdfReader(file)
         full_text = ""
         
+        # Extract text from all pages
         for page_num, page in enumerate(reader.pages):
-            page_text = page.extract_text()
-            full_text += f"\n[Page {page_num + 1}]\n{page_text}"
+            page_text = page.extract_text() or ""  # Handle None case
+            if page_text.strip():  # Only add non-empty pages
+                full_text += f"\n[Page {page_num + 1}]\n{page_text}"
         
+        # Check if we have any text content
+        if not full_text.strip():
+            st.warning(f"No text content found in PDF: {filename}")
+            return chunks
+        
+        # Chunk the text
         text_chunks = chunk_text(full_text, config.CHUNK_SIZE, config.CHUNK_OVERLAP)
         
-        for i, chunk_text in enumerate(text_chunks):
-            page_match = re.search(r'\[Page (\d+)\]', chunk_text)
+        if not text_chunks:
+            st.warning(f"No chunks created from PDF: {filename}")
+            return chunks
+        
+        # Create document chunks
+        for i, text_chunk in enumerate(text_chunks):
+            page_match = re.search(r'\[Page (\d+)\]', text_chunk)
             page_num = int(page_match.group(1)) if page_match else 1
             
             metadata = {
@@ -97,10 +123,11 @@ def load_pdf(file, filename: str, tags: List[str] = None) -> List[DocumentChunk]
                 "tags": tags or [],
                 "total_chunks": len(text_chunks)
             }
-            chunks.append(DocumentChunk(chunk_text, metadata))
+            chunks.append(DocumentChunk(text_chunk, metadata))
     
     except Exception as e:
         st.error(f"Error loading PDF {filename}: {e}")
+        # Return empty chunks list on error
     
     return chunks
 
@@ -109,10 +136,22 @@ def load_markdown(file, filename: str, tags: List[str] = None) -> List[DocumentC
     chunks = []
     try:
         content = file.read().decode('utf-8')
+        
+        # Check if we have any content
+        if not content.strip():
+            st.warning(f"No content found in Markdown file: {filename}")
+            return chunks
+        
+        # Chunk the text
         text_chunks = chunk_text(content, config.CHUNK_SIZE, config.CHUNK_OVERLAP)
         
-        for i, chunk_text in enumerate(text_chunks):
-            section = extract_section_header(chunk_text)
+        if not text_chunks:
+            st.warning(f"No chunks created from Markdown file: {filename}")
+            return chunks
+        
+        # Create document chunks
+        for i, text_chunk in enumerate(text_chunks):
+            section = extract_section_header(text_chunk)
             
             metadata = {
                 "filename": filename,
@@ -122,10 +161,11 @@ def load_markdown(file, filename: str, tags: List[str] = None) -> List[DocumentC
                 "tags": tags or [],
                 "total_chunks": len(text_chunks)
             }
-            chunks.append(DocumentChunk(chunk_text, metadata))
+            chunks.append(DocumentChunk(text_chunk, metadata))
     
     except Exception as e:
         st.error(f"Error loading Markdown {filename}: {e}")
+        # Return empty chunks list on error
     
     return chunks
 
