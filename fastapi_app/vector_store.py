@@ -3,9 +3,9 @@ import numpy as np
 import pickle
 import os
 from typing import List, Dict, Any, Tuple
-from .document_loader import DocumentChunk
-from .gemini_client import gemini_client
-from .config import config
+from fastapi_app.document_loader import DocumentChunk
+from fastapi_app.gemini_client import gemini_client
+from fastapi_app.config import config
 
 class VectorStore:
     def __init__(self):

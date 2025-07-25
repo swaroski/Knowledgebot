@@ -6,10 +6,10 @@ import tempfile
 import os
 import uuid
 
-from .document_loader import document_loader
-from .vector_store import vector_store
-from .gemini_client import gemini_client
-from .conversation import conversation_memory
+from fastapi_app.document_loader import document_loader
+from fastapi_app.vector_store import vector_store
+from fastapi_app.gemini_client import gemini_client
+from fastapi_app.conversation import conversation_memory
 
 app = FastAPI(title="Q&A Knowledge Base API", version="1.0.0")
 

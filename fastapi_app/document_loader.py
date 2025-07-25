@@ -1,7 +1,7 @@
 import re
 from typing import List, Dict, Any
 from pypdf import PdfReader
-from .config import config
+from fastapi_app.config import config
 
 class DocumentChunk:
     def __init__(self, text: str, metadata: Dict[str, Any]):

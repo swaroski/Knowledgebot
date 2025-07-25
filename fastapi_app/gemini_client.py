@@ -1,6 +1,6 @@
 import google.generativeai as genai
 from typing import List, Dict, Any
-from .config import config
+from fastapi_app.config import config
 
 class GeminiClient:
     def __init__(self):
