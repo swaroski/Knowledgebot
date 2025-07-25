@@ -54,7 +54,7 @@ def init_gemini():
         st.stop()
     
     genai.configure(api_key=config.GEMINI_API_KEY)
-    return genai.GenerativeModel("gemini-pro")
+    return genai.GenerativeModel("gemini-2.5-pro")
 
 # Document processing functions
 def chunk_text(text: str, chunk_size: int, chunk_overlap: int) -> List[str]:

@@ -7,7 +7,7 @@ class GeminiClient:
         config.validate()
         genai.configure(api_key=config.GEMINI_API_KEY)
         self.embedding_model = "models/embedding-001"
-        self.chat_model = genai.GenerativeModel("gemini-pro")
+        self.chat_model = genai.GenerativeModel("gemini-2.5-pro")
     
     def get_embeddings(self, text: str) -> List[float]:
         """Get embeddings for text using Gemini embedding model"""
